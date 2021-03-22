@@ -10,11 +10,17 @@ cp test/test_images/* test/test_dir/
 cp test/test_images/* test/test_files/
 
 # Globbing should work?
+echo ""
 echo "./unbmp png test/test_files/*"
+echo "--------------------------------"
 ./unbmp png test/test_files/*
 
-echo "./unbmp png -d test/test_dir"
+echo ""
+echo "./unbmp png -d test/test_dir -s bmp"
+echo "--------------------------------"
 ./unbmp png -d test/test_dir -s bmp
 
-echo "./unbmp jpg -d test/test_dir -s bmp"
-./unbmp jpg -d test/test_dir -s bmp
+echo ""
+echo "./unbmp jpg -d test/test_dir -s png"
+echo "--------------------------------"
+./unbmp jpg -d test/test_dir -s png

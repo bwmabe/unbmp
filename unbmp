@@ -3,37 +3,130 @@
 import argparse
 import os
 import sys
+import wand
 from wand.image import Image
+
+# Global Flags
+VERBOSE = False
+DRY_RUN = False
+
+
+def check_filetype(fname, ftype):
+    if len(fname) < len(ftype):
+        return False
+
+    return fname[-(len(ftype) + 1):].lower() == '.' + ftype.lower()
 
 
 def convert(files, dest_extension, src_extension=None):
-    print(src_extension)
+    ext = ""
+    to_convert = []
+    converted = 0
+    failed = []
+
+    if src_extension is None:
+        ext = "bmp"
+    else:
+        ext = src_extension
+
+    for fname in files:
+        if check_filetype(fname, ext):
+            converted_filename = fname[:-4] + '.' + dest_extension
+            to_convert.append((fname, converted_filename))
+
+    if DRY_RUN:
+        if to_convert:
+            print("To Modify:")
+            for i in to_convert:
+                print("%s -> %s" % i)
+            print("{} files will be modified".format(len(to_convert)))
+        else:
+            print("Nothing to change")
+        return
+
+    for i in to_convert:
+        if VERBOSE:
+            print("%s -> %s" % i)
+
+        try:
+            with Image(filename=i[0]) as img:
+                img.format = dest_extension
+                img.save(filename=i[1])
+                converted += 1
+                if VERBOSE:
+                    print("Converting {} succeeded".format(i[0]))
+        except wand.exceptions.CorruptImageError:
+            print("'{}' is not a {} image".format(i[0], dest_extension))
+            failed.append(i[0])
+        except Exception as e:
+            print(e)
+            failed.append(i[0])
+
+    if VERBOSE:
+        if failed:
+            print("{} image(s) processed; {} converted; {} failed"
+                  .format(len(to_convert), converted, len(failed)))
+        else:
+            print("all {} images converted".format(len(to_convert)))
 
 
 def find_images(directory, dest_extension, src_extension=None):
-    print("")
+    dir_contents = os.listdir(directory)
+    to_convert = []
+    ext = ""
+
+    if src_extension is None:
+        ext = "bmp"
+    else:
+        ext = src_extension
+
+    for fname in dir_contents:
+        if check_filetype(fname, ext):
+            if VERBOSE:
+                print("Found '{}'".format(fname))
+            to_convert.append(fname)
+
+    if to_convert:
+        if VERBOSE:
+            print("{} files found".format(len(to_convert)))
+        print(to_convert)
+    else:
+        print("Nothing Found")
+
+    # print(os.listdir(directory))
 
 
 def main(argv):
+    global VERBOSE
+    global DRY_RUN
+
     parser = argparse.ArgumentParser(
         description='Convert images from one format to another')
+
+    parser.add_argument('-n', action='store_true',  help='dry run')
+
+    parser.add_argument('--verbose', action='store_true',
+                        help='output debugging text')
 
     parser.add_argument('output_extension', metavar='DEST_EXTENSION', type=str,
                         help="file extension for output files")
 
-    parser.add_argument('-d', metavar='DIRECTORY', type=str, nargs=1,
+    parser.add_argument('-d', metavar='DIRECTORY', type=str,
                         help="source from a directory", required=False)
 
     parser.add_argument('-s', metavar='SOURCE_EXTENSION', type=str,
                         help="extension for source filetype; required with -d")
 
+    parser.add_argument('-o', metavar='OUTPUT_DIRECTORY', type=str,
+                        help="output the processed images to a directory")
+
     parser.add_argument('input_files', metavar='FILE', type=str, nargs='*',
                         help="files to convert; mutually exclusive with '-d'")
 
-    parser.add_argument('--verbose', action='store_true',
-                        help='output debugging text')
-
     args = parser.parse_args(argv)
+
+    VERBOSE = args.verbose
+    DRY_RUN = args.n
 
     if args.d is not None:
         if args.input_files:
@@ -53,7 +146,7 @@ def main(argv):
             print("unbmp: error: input FILES are required if '-d' is not used")
             exit(1)
 
-        convert(args.input_files, args.output_extension, args.s)
+        convert(args.input_files, args.output_extension)
 
     print(args)
 
