@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+from wand.image import Image
+
+
+def convert(files, dest_extension, src_extension=None):
+    print(src_extension)
+
+
+def find_images(directory, dest_extension, src_extension=None):
+    print("")
+
+
+def main(argv):
+    parser = argparse.ArgumentParser(
+        description='Convert images from one format to another')
+
+    parser.add_argument('output_extension', metavar='DEST_EXTENSION', type=str,
+                        help="file extension for output files")
+
+    parser.add_argument('-d', metavar='DIRECTORY', type=str, nargs=1,
+                        help="source from a directory", required=False)
+
+    parser.add_argument('-s', metavar='SOURCE_EXTENSION', type=str,
+                        help="extension for source filetype; required with -d")
+
+    parser.add_argument('input_files', metavar='FILE', type=str, nargs='*',
+                        help="files to convert; mutually exclusive with '-d'")
+
+    parser.add_argument('--verbose', action='store_true',
+                        help='output debugging text')
+
+    args = parser.parse_args(argv)
+
+    if args.d is not None:
+        if args.input_files:
+            print("unbmp: error: DIRECTORY and FILEs are mutually exclusive")
+            exit(1)
+
+        if args.s is None:
+            print("unbmp: error: '-s' is required when '-d' is used")
+            exit(1)
+
+        find_images(args.d, args.output_extension, args.s)
+    else:
+        if args.s is not None:
+            print("unbmp: warning: '-s' does nothing unless '-d' is used")
+
+        if not args.input_files:
+            print("unbmp: error: input FILES are required if '-d' is not used")
+            exit(1)
+
+        convert(args.input_files, args.output_extension, args.s)
+
+    print(args)
+
+
+main(sys.argv[1:])
+
+# vi:syntax=python
