@@ -13,13 +13,29 @@ DRY_RUN = False
 
 
 def check_filetype(fname: str, ftype: str) -> bool:
+    """Check if a file is of the desired type
+
+    Arguments:
+    fname -- the filename
+    ftype -- the desired filetype
+    """
+
+    if os.path.isdir(fname):
+        return False
     if len(fname) < len(ftype):
         return False
-
     return fname[-(len(ftype) + 1):].lower() == '.' + ftype.lower()
 
 
 def get_conv_fname(fname: str, dest_ext: str, output_dir=None) -> str:
+    """Returns the filename and path of the file after conversion
+
+    Arguments:
+    fname -- the original filename
+    dest_ext -- the extension of the destination file
+    output_dir -- the output directory of the operation
+    """
+
     if output_dir is not None:
         fname_wo_path = fname.split('/')[-1][:-4] + '.' + dest_ext
         if output_dir[-1] != '/':
@@ -30,6 +46,13 @@ def get_conv_fname(fname: str, dest_ext: str, output_dir=None) -> str:
 
 
 def concat_filename(path, fname) -> str:
+    """Concatenates the source filename and source path
+
+    Arguments:
+    path -- the path of the file
+    fname -- the filename
+    """
+
     if path[-1] != "/":
         return path + "/" + fname
     else:
@@ -38,6 +61,16 @@ def concat_filename(path, fname) -> str:
 
 def convert(files: typing.List[str], dest_ext: str, src_ext=None,
             output_dir=None) -> None:
+    """Converts a list of files to a different filetype
+    Optionally puts them in a desired directory
+
+    Arguments:
+    files -- a List of files to be converted
+    dest_ext -- the file extension to convert to
+    src_ext -- the extension of files to be converted
+    output_dir -- (optional) the directory in which the output files are placed
+    """
+
     ext = ""
     to_convert = []
     converted = 0
@@ -75,7 +108,7 @@ def convert(files: typing.List[str], dest_ext: str, src_ext=None,
                 if VERBOSE:
                     print("Converting {} succeeded".format(i[0]))
         except wand.exceptions.CorruptImageError:
-            print("'{}' is not a {} image".format(i[0], dest_ext))
+            print("'{}' is not a {} image".format(i[0], src_ext))
             failed.append(i[0])
         except Exception as e:
             print(e)
@@ -91,6 +124,15 @@ def convert(files: typing.List[str], dest_ext: str, src_ext=None,
 
 def find_images(directory: str, dest_ext: str, src_ext=None,
                 output_dir=None) -> None:
+    """Examines a directory and returns images that can be converted
+
+    Arguments:
+    directory -- the directory to look for files in
+    dest_ext -- the extension that files should ahve after conversion
+    src_ext -- the extension of files to be converted
+    output_dir -- the directory to output converted files to
+    """
+
     dir_contents = os.listdir(directory)
     to_convert = []
     ext = ""
@@ -115,6 +157,12 @@ def find_images(directory: str, dest_ext: str, src_ext=None,
 
 
 def main(argv: list) -> None:
+    """ Handles argument parsing and input validation
+
+    Arguments:
+    argv -- a list of arguments
+    """
+
     global VERBOSE
     global DRY_RUN
 
