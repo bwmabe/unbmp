@@ -18,7 +18,7 @@ echo "--------------------------------"
 echo ""
 echo "./unbmp png -d test/test_dir -s bmp"
 echo "--------------------------------"
-./unbmp png -d test/test_dir -s bmp
+./unbmp png --verbose -d test/test_dir -s bmp
 
 echo ""
 echo "./unbmp jpg -d test/test_dir -s png"

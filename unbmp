@@ -51,10 +51,6 @@ def convert(files: typing.List[str], dest_ext: str, src_ext=None,
     for fname in files:
         if check_filetype(fname, ext):
             conv_fname = get_conv_fname(fname, dest_ext, output_dir)
-            print(conv_fname)
-            # if output_dir is not None:
-            #     converted_filename = concat_filename(output_dir,
-            #                                          converted_filename)
             to_convert.append((fname, conv_fname))
 
     if DRY_RUN:
@@ -117,8 +113,6 @@ def find_images(directory: str, dest_ext: str, src_ext=None,
     else:
         print("Nothing Found")
 
-    # print(os.listdir(directory))
-
 
 def main(argv: list) -> None:
     global VERBOSE
@@ -161,7 +155,7 @@ def main(argv: list) -> None:
             print("unbmp: error: '-s' is required when '-d' is used")
             exit(1)
 
-        find_images(args.d, args.output_extension, args.s)
+        find_images(args.d, args.output_extension, args.s, args.o)
     else:
         if args.s is not None:
             print("unbmp: warning: '-s' does nothing unless '-d' is used")
@@ -170,9 +164,7 @@ def main(argv: list) -> None:
             print("unbmp: error: input FILES are required if '-d' is not used")
             exit(1)
 
-        convert(args.input_files, args.output_extension)
-
-    print(args)
+        convert(args.input_files, args.output_extension, output_dir=args.o)
 
 
 main(sys.argv[1:])
