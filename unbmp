@@ -3,36 +3,59 @@
 import argparse
 import os
 import sys
-import wand
-from wand.image import Image
+import typing
+import wand  # type: ignore
+from wand.image import Image  # type: ignore
 
 # Global Flags
 VERBOSE = False
 DRY_RUN = False
 
 
-def check_filetype(fname, ftype):
+def check_filetype(fname: str, ftype: str) -> bool:
     if len(fname) < len(ftype):
         return False
 
-    return fname[-(len(ftype) + 1):].lower() == '.' + ftype.lower()
+    return True  # fname[-(len(ftype) + 1):].lower() == '.' + ftype.lower()
 
 
-def convert(files, dest_extension, src_extension=None):
+def get_conv_fname(fname: str, dest_ext: str, output_dir=None) -> str:
+    if output_dir is not None:
+        fname_wo_path = fname.split('/')[-1][:-4] + '.' + dest_ext
+        if output_dir[-1] != '/':
+            output_dir = output_dir + '/'
+        return output_dir + fname_wo_path
+    else:
+        return fname[:-4] + '.' + dest_ext
+
+
+def concat_filename(path, fname) -> str:
+    if path[-1] != "/":
+        return path + "/" + fname
+    else:
+        return path + fname
+
+
+def convert(files: typing.List[str], dest_ext: str, src_ext=None,
+            output_dir=None) -> None:
     ext = ""
     to_convert = []
     converted = 0
     failed = []
 
-    if src_extension is None:
+    if src_ext is None:
         ext = "bmp"
     else:
-        ext = src_extension
+        ext = src_ext
 
     for fname in files:
         if check_filetype(fname, ext):
-            converted_filename = fname[:-4] + '.' + dest_extension
-            to_convert.append((fname, converted_filename))
+            conv_fname = get_conv_fname(fname, dest_ext, output_dir)
+            print(conv_fname)
+            # if output_dir is not None:
+            #     converted_filename = concat_filename(output_dir,
+            #                                          converted_filename)
+            to_convert.append((fname, conv_fname))
 
     if DRY_RUN:
         if to_convert:
@@ -50,13 +73,13 @@ def convert(files, dest_extension, src_extension=None):
 
         try:
             with Image(filename=i[0]) as img:
-                img.format = dest_extension
+                img.format = dest_ext
                 img.save(filename=i[1])
                 converted += 1
                 if VERBOSE:
                     print("Converting {} succeeded".format(i[0]))
         except wand.exceptions.CorruptImageError:
-            print("'{}' is not a {} image".format(i[0], dest_extension))
+            print("'{}' is not a {} image".format(i[0], dest_ext))
             failed.append(i[0])
         except Exception as e:
             print(e)
@@ -70,33 +93,34 @@ def convert(files, dest_extension, src_extension=None):
             print("all {} images converted".format(len(to_convert)))
 
 
-def find_images(directory, dest_extension, src_extension=None):
+def find_images(directory: str, dest_ext: str, src_ext=None,
+                output_dir=None) -> None:
     dir_contents = os.listdir(directory)
     to_convert = []
     ext = ""
 
-    if src_extension is None:
+    if src_ext is None:
         ext = "bmp"
     else:
-        ext = src_extension
+        ext = src_ext
 
     for fname in dir_contents:
         if check_filetype(fname, ext):
             if VERBOSE:
                 print("Found '{}'".format(fname))
-            to_convert.append(fname)
+            to_convert.append(concat_filename(directory, fname))
 
     if to_convert:
         if VERBOSE:
             print("{} files found".format(len(to_convert)))
-        print(to_convert)
+        convert(to_convert, dest_ext, src_ext, output_dir)
     else:
         print("Nothing Found")
 
     # print(os.listdir(directory))
 
 
-def main(argv):
+def main(argv: list) -> None:
     global VERBOSE
     global DRY_RUN
 
