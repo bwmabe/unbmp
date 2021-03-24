@@ -212,6 +212,7 @@ def main(argv: list) -> None:
         convert(args.input_files, args.output_extension, args.s, args.o)
 
 
-main(sys.argv[1:])
+if __name__ == "__main__":
+    main(sys.argv[1:])
 
 # vi:syntax=python
