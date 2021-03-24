@@ -45,7 +45,7 @@ def get_conv_fname(fname: str, dest_ext: str, output_dir=None) -> str:
         return fname[:-4] + '.' + dest_ext
 
 
-def concat_filename(path, fname) -> str:
+def concat_filename(path: str, fname: str) -> str:
     """Concatenates the source filename and source path
 
     Arguments:
