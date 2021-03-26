@@ -70,3 +70,32 @@ def test_get_conv_fname() -> None:
     no_path_output_dir(fname, dest_ext, output_dir)
     path_no_output_dir(fname_w_path, dest_ext)
     path_output_dir(fname, dest_ext, output_dir)
+
+
+def test_concat_filename() -> None:
+    fname = "abcABC123.bMp"
+    path = "/home/user/Pictures/cool\ pictures/bmp/"
+    path_no_slash_suffix = "/home/user/Pictures/cool\ pictures/bmp"
+    path_no_slash_prefix = "home/user/Pictures/cool\ pictures/bmp/"
+    path_no_slash = "home/user/Pictures/cool\ pictures/bmp"
+
+    def with_slash(filename: str, path: str) -> None:
+        goal = path + filename
+        assert unbmp.concat_filename(path, filename) == goal
+
+    def without_slash_suffix(filename: str, path: str) -> None:
+        goal = path + "/" + filename
+        assert unbmp.concat_filename(path, filename) == goal
+
+    def without_slash_prefix(filename: str, path: str) -> None:
+        goal = path + filename
+        assert unbmp.concat_filename(path, filename) == goal
+
+    def without_slash(filename: str, path: str) -> None:
+        goal = path + "/" + filename
+        assert unbmp.concat_filename(path, filename) == goal
+
+    with_slash(fname, path)
+    without_slash_suffix(fname, path_no_slash_suffix)
+    without_slash_prefix(fname, path_no_slash_prefix)
+    without_slash(fname, path_no_slash)
